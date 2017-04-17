@@ -15,6 +15,8 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.athena.administrator.database.LoginDataBaseAdapter;
+
 
 /**
  * A login screen that offers login via email/password.
@@ -30,7 +32,7 @@ public class LoginActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-      //  getuser();
+        getuser();
         btlogin = (Button) findViewById(R.id.button1);
         btlogin.setOnClickListener (new View.OnClickListener()  {
             @Override
@@ -50,57 +52,57 @@ public class LoginActivity extends ActionBarActivity {
                         //  Log.v("tag",Environment.getExternalStorageDirectory().getAbsolutePath());
                         //Log.v("tag",getExternalFilesDir("exter_test").getAbsolutePath());
 
-                      //  LoginIn(username, password);
+                        LoginIn( sUsername, sPassword );
                     }
                 }
             }
         });
-    }/*
+    }
     public void getuser(){
         LoginDataBaseAdapter lg =new LoginDataBaseAdapter( this );
         cb = (CheckBox)this.findViewById(R.id.checkBox);
-        username = lg.getRemberUser();
-        if(username!=null){
-            editText = (EditText) findViewById(R.id.name);
-            editText.setText(username.trim());
+        sUsername = lg.getRemberUser();
+        if(sUsername!=null){
+            editText = (EditText) findViewById(R.id.username);
+            editText.setText(sUsername.trim());
             cb.setChecked(true);
-            editText = (EditText) findViewById(R.id.pass);
+            editText = (EditText) findViewById(R.id.password);
             editText.requestFocus();
         }else {
             cb.setChecked(false);
-            editText = (EditText) findViewById(R.id.name);
+            editText = (EditText) findViewById(R.id.username);
             editText.requestFocus();
         }
     }
 
 
-    public void remberUser(){
-        LoginDataBaseAdapter lg =new LoginDataBaseAdapter( this );
-        cb = (CheckBox)this.findViewById(R.id.checkBox);
-        if( cb.isChecked() ){
-            lg.remberUser(username);
-        }else{
-            lg.unremberUser(username);
+        public void remberUser(){
+            LoginDataBaseAdapter lg =new LoginDataBaseAdapter( this );
+            cb = (CheckBox)this.findViewById(R.id.checkBox);
+            if( cb.isChecked() ){
+                lg.remberUser(sUsername);
+            }else{
+                lg.unremberUser(sUsername);
+            }
+
         }
 
-    }
+        public void LoginIn(String username,String password){
+            String stat;
 
-    public void LoginIn(String username,String password){
-        String stat;
+            LoginDataBaseAdapter lg =new LoginDataBaseAdapter( this );
+            //  Log.v("tag",username+password);
+            stat = lg.login(username, password);
+            if( !stat.equals("False") ){
+                Toast.makeText( LoginActivity.this, "Welcome "+username , Toast.LENGTH_SHORT).show();
+                remberUser();
+                starAct(stat);
+            }else{
+                Toast.makeText(LoginActivity.this, "密码不正确！", Toast.LENGTH_SHORT).show();
+            }
 
-        LoginDataBaseAdapter lg =new LoginDataBaseAdapter( this );
-        //  Log.v("tag",username+password);
-        stat = lg.login(username, password);
-        if( !stat.equals("False") ){
-            Toast.makeText( LoginActivity.this, "Welcome "+username , Toast.LENGTH_SHORT).show();
-            remberUser();
-            starAct(stat);
-        }else{
-            Toast.makeText(LoginActivity.this, "��Ǹ�� ����������", Toast.LENGTH_SHORT).show();
         }
 
-    }
-*/
     private void starAct(String stat){
         Intent i=new Intent();
         i.setClass(getApplicationContext(), MainActivity.class);

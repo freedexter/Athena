@@ -61,9 +61,6 @@ public class MainActivity extends ActionBarActivity
         switch (number) {
             case 1:
                 mTitle = getString(R.string.title_section1);
-                Intent i=new Intent();
-                i.setClass(getApplicationContext(), LoginActivity.class);
-                startActivity(i);
                 break;
             case 2:
                 mTitle = getString(R.string.title_section2);
