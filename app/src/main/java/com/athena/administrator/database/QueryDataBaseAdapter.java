@@ -25,7 +25,7 @@ public class QueryDataBaseAdapter {
     LoginDataBaseAdapter loginDataBaseAdapter;
 
     public QueryDataBaseAdapter(Context context){
-        dbHelper=new DataBaseHelper(context);
+        dbHelper=DataBaseHelper.getDataBaseHelper(context);
     }
 
     public ArrayList<HashMap<String, Object>>  getToolDtlData( String username   ){

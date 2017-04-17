@@ -6,6 +6,11 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
 import android.util.Log;
 
+import com.athena.administrator.athena.R;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 
 public class DataBaseHelper extends SQLiteOpenHelper{
@@ -24,21 +29,29 @@ public class DataBaseHelper extends SQLiteOpenHelper{
             + Environment.getDataDirectory().getAbsolutePath() + "/"
             + PACKAGE_NAME+"/databases"; //在手机里存放数据库的位置
     public static final String DB_FILE = DB_PATH+"/"+dbname;
-    public DataBaseHelper(Context context) {
+
+    private static DataBaseHelper instance;//这里主要解决死锁问题,是static就能解决死锁问题
+
+    private DataBaseHelper(Context context) {
         super(context, dbname, null, dbVersion);
         this.context = context;
+    }
+    public synchronized static DataBaseHelper getDataBaseHelper(Context context){
+        if(instance==null)
+            instance=new DataBaseHelper(context);
+        return instance;
     }
 
     public void onCreate(SQLiteDatabase db) {
         String strSql;
-
+/*
         strSql="create table  "+usertable+" ( username varchar(20) primary key NOT NULL UNIQUE,password varchar(20),stat varchar(5))";
         db.execSQL(strSql);
 
-        strSql="Insert into "+usertable+" values('admin,','admin','00')";
+        strSql="Insert into "+usertable+" values('admin','admin','00')";
         db.execSQL(strSql);
-      //  Log.i("tips", strSql);
- /*
+
+
         strSql="create table  "+tool_dtltable+" ( sourcefrom varchar(20) NOT NULL, toolname varchar(20) NOT NULL, trandate varchar(8) NOT NULL, currency varchar(4),"
                                             +"number integer ,soldnumber integer ,totprice real,feepercent real,feeprice real,exchangerate real,"
                                             +"rmb_totprice real,rmb_singprice real,transprice real ,singlesum real,weight integer ,totweight integer ,"
@@ -73,7 +86,36 @@ public class DataBaseHelper extends SQLiteOpenHelper{
             // TODO Auto-generated catch block
             e.printStackTrace();
         }*/
+        try {
+            this.initDataBase();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
+    private void  initDataBase() throws IOException {
+
+        // 打开静态数据库文件的输入流
+        InputStream is = context.getResources().openRawResource( R.raw.daydayup );
+        // 通过Context类来打开目标数据库文件的输出流，这样可以避免将路径写死。
+
+        //     File f=new File(DB_FILE);
+        //    if( !f.exists() ) {
+        //     myDataBase.endTransaction();
+        //   myDataBase.beginTransaction();
+        FileOutputStream os = new FileOutputStream(DB_FILE);
+        Log.i("tips", DB_FILE);
+        byte[] buffer = new byte[BUFFER_SIZE];
+        int count = 0;
+        // 将静态数据库文件拷贝到目的地
+        while ((count = is.read(buffer)) > 0) {
+            os.write(buffer, 0, count);
+        }
+        is.close();
+        os.close();
+        myDataBase.openOrCreateDatabase(DB_FILE, null);
+        //    }
+        return;
     }
 
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){}

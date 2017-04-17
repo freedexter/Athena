@@ -10,18 +10,19 @@ public class LoginDataBaseAdapter{
 
     private DataBaseHelper dbHelper;
     public LoginDataBaseAdapter(Context context){
-        dbHelper=new DataBaseHelper(context);
+        dbHelper=DataBaseHelper.getDataBaseHelper(context);
     }
 
-    //��¼��
     public String login(String username,String password ){
         String ret;
         SQLiteDatabase sdb=dbHelper.getReadableDatabase();
+        sdb.beginTransaction();
         String sql="select * from user where username=?";
         Cursor cursor=sdb.rawQuery(sql, new String[]{username});
         if(cursor.moveToFirst()==true){
             if( password.equals(cursor.getString(cursor.getColumnIndex("password"))) == false ){
                 cursor.close();
+                sdb.endTransaction();
                 sdb.close();
                 ret = "False";
                 return ret;
@@ -38,6 +39,7 @@ public class LoginDataBaseAdapter{
         }
         Log.v("tag", username+ret);
         cursor.close();
+        sdb.endTransaction();
         sdb.close();
         return ret;
     }
@@ -45,12 +47,15 @@ public class LoginDataBaseAdapter{
     public String getRemberUser(){
         String username=null;
         SQLiteDatabase sdb=dbHelper.getReadableDatabase();
+        sdb.beginTransaction();
         String sql="select * from user where substr(stat,2,2)='1'";
         Cursor cursor=sdb.rawQuery(sql, null);
         if(cursor.moveToFirst()==true){
             username =cursor.getString(  cursor.getColumnIndex("username") );
         }
+
         cursor.close();
+        sdb.endTransaction();
         sdb.close();
         return username;
     }
@@ -63,6 +68,7 @@ public class LoginDataBaseAdapter{
         char[] a;
 
         sdb =dbHelper.getReadableDatabase();
+        sdb.beginTransaction();
         sql="select * from user where username = '"+username+"'";
         cursor=sdb.rawQuery(sql, null);
         if(cursor.moveToFirst()==true){
@@ -76,6 +82,7 @@ public class LoginDataBaseAdapter{
         sdb.execSQL(sql);
 
         cursor.close();
+        sdb.endTransaction();
         sdb.close();
         return username;
     }
@@ -89,6 +96,7 @@ public class LoginDataBaseAdapter{
         char[] a;
 
         sdb =dbHelper.getReadableDatabase();
+        sdb.beginTransaction();
         sql="select * from user where username = '"+username+"'";
         cursor=sdb.rawQuery(sql, null);
         if(cursor.moveToFirst()==true){
@@ -102,6 +110,7 @@ public class LoginDataBaseAdapter{
         sdb.execSQL(sql);
 
         cursor.close();
+        sdb.endTransaction();
         sdb.close();
         return username;
     }
@@ -109,9 +118,11 @@ public class LoginDataBaseAdapter{
     //注册用户
     public boolean register(User user){
         SQLiteDatabase sdb=dbHelper.getReadableDatabase();
+        sdb.beginTransaction();
         String sql="insert into user(username,password,stat) values(?,?,?)";
         Object obj[]={user.getUsername(),user.getPassword(),user.getStat()};
         sdb.execSQL(sql, obj);
+        sdb.endTransaction();
         sdb.close();
         return true;
     }
