@@ -2,6 +2,7 @@ package com.athena.administrator.database;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
 import android.util.Log;
@@ -86,36 +87,50 @@ public class DataBaseHelper extends SQLiteOpenHelper{
             // TODO Auto-generated catch block
             e.printStackTrace();
         }*/
-        try {
-            this.initDataBase();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
-    private void  initDataBase() throws IOException {
+    public void  createDataBase() throws IOException {
 
-        // 打开静态数据库文件的输入流
-        InputStream is = context.getResources().openRawResource( R.raw.daydayup );
-        // 通过Context类来打开目标数据库文件的输出流，这样可以避免将路径写死。
+        SQLiteDatabase checkDB = null;
+        try {
+            checkDB = SQLiteDatabase.openDatabase( DB_FILE, null, SQLiteDatabase.OPEN_READONLY);
+        }catch (SQLiteException e){}
 
-        //     File f=new File(DB_FILE);
-        //    if( !f.exists() ) {
-        //     myDataBase.endTransaction();
-        //   myDataBase.beginTransaction();
-        FileOutputStream os = new FileOutputStream(DB_FILE);
-        Log.i("tips", DB_FILE);
-        byte[] buffer = new byte[BUFFER_SIZE];
-        int count = 0;
-        // 将静态数据库文件拷贝到目的地
-        while ((count = is.read(buffer)) > 0) {
-            os.write(buffer, 0, count);
+        if(checkDB != null){
+            checkDB.close();
+        }else {
+            //By calling this method and empty database will be created into the default system path
+            //of your application so we are gonna be able to overwrite that database with our database.
+            this.getReadableDatabase();
+            // 打开静态数据库文件的输入流
+            InputStream is = context.getResources().openRawResource(R.raw.daydayup);
+            // 通过Context类来打开目标数据库文件的输出流，这样可以避免将路径写死。
+            FileOutputStream os = new FileOutputStream(DB_FILE);
+
+            byte[] buffer = new byte[BUFFER_SIZE];
+            int count = 0;
+            // 将静态数据库文件拷贝到目的地
+            while ((count = is.read(buffer)) > 0) {
+                os.write(buffer, 0, count);
+            }
+            os.flush();
+            os.close();
+            is.close();
         }
-        is.close();
-        os.close();
-        myDataBase.openOrCreateDatabase(DB_FILE, null);
-        //    }
         return;
+    }
+
+    public SQLiteDatabase openDataBase() throws IOException{
+
+        myDataBase = SQLiteDatabase.openDatabase( DB_FILE, null, SQLiteDatabase.OPEN_READWRITE);
+       return myDataBase;
+    }
+
+    @Override
+    public synchronized void close() {
+        if(myDataBase != null)
+            myDataBase.close();
+        super.close();
     }
 
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){}
